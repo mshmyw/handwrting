@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>一笔一画 · 观潮</title>
+<meta name="description" content="按真实笔顺一笔一画写出一首词，宣纸、楷体、笔触声。" />
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+<div class="wall-glow" aria-hidden="true"></div>
+
+<header class="brand" id="brand">
+  <b>一笔一画</b>
+  <span>汉字笔顺 · 手写动画</span>
+</header>
+
+<nav class="modes" id="modes" aria-label="展示形式">
+  <button type="button" data-mode="write" class="on" title="楷书笔顺，一笔一画">写字</button>
+  <button type="button" data-mode="brush" title="毛笔笔触，墨晕与飞白">毛笔</button>
+  <button type="button" data-mode="ink" title="水墨文人画：竹、梅、荷、山">水墨</button>
+</nav>
+
+
+<main class="stage" id="stage">
+  <div class="scroll" id="scroll">
+    <div class="paper vert" id="paper">
+      <div class="grain" aria-hidden="true"></div>
+      <div class="sheen" aria-hidden="true"></div>
+      <div class="scene" id="scene" aria-hidden="true"></div>
+      <div class="frame" aria-hidden="true"></div>
+      <div class="text vert" id="text"></div>
+      <div class="colophon" id="colophon">
+        <div class="sig" id="sig"></div>
+        <div class="seal" id="seal" role="button" tabindex="0" aria-label="更换印章" title="点击换印章"><span>墨</span><span>戏</span></div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<div class="player" id="player">
+  <form class="quick" id="quick" autocomplete="off">
+    <label class="quick-label" for="quickText">写一句</label>
+    <input id="quickText" type="text" maxlength="220" placeholder="马羽萱 / 生日快乐，天天开心。…" />
+    <button class="quick-open" id="quickOpen" type="button"><span aria-hidden="true">✎</span> 写一句：名字、句子，或整首词…</button>
+    <button class="quick-more" id="quickMore" type="button" title="加标题、作者，或写整首词">词牌</button>
+    <button class="quick-go" id="quickGo" type="submit">开写</button>
+  </form>
+  <div class="timeline" id="timeline">
+    <input id="timeRange" type="range" min="0" max="1" step="0.0005" value="0" aria-label="书写进度，可拖动" />
+    <span class="timecode" id="timecode">0:00 / 0:00</span>
+  </div>
+  <div class="mobile-bar" id="mobileBar">
+    <button type="button" id="mReplay">重写</button>
+    <button type="button" id="mPause">暂停</button>
+    <span class="m-spacer" aria-hidden="true"></span>
+    <button type="button" id="mLens" class="m-lens on" title="放大镜：突出正在写的字">放大</button>
+    <button type="button" id="mMore" class="m-more">更多</button>
+  </div>
+  <div class="hud" id="hud">
+  <button class="ctl" id="btnReplay" title="重写（R）">重写</button>
+  <button class="ctl" id="btnPause" title="暂停 / 继续（空格）">暂停</button>
+  <span class="vrule" aria-hidden="true"></span>
+  <div class="speed" id="speedBox">
+    <output id="speedVal" class="speed-val" for="speedRange">1.0×</output>
+    <span class="speed-cap" aria-hidden="true">慢</span>
+    <input id="speedRange" type="range" min="0.4" max="2" step="0.05" value="1" aria-label="书写速度 0.4 到 2 倍" title="书写速度：0.4× 很慢 · 1.0× 像人写 · 2.0× 快速" />
+    <span class="speed-cap" aria-hidden="true">快</span>
+  </div>
+  <span class="vrule" aria-hidden="true"></span>
+  <button class="ctl" id="btnGrid" title="显示田字格（G）">格</button>
+  <button class="ctl on" id="btnLens" title="放大镜：突出正在写的字">放大</button>
+  <button class="ctl on" id="btnSound" title="笔触声">声</button>
+  <button class="ctl" id="btnRead" title="朗读（系统语音）">读</button>
+  <span class="vrule" aria-hidden="true"></span>
+  <button class="ctl" id="btnSave" title="保存为 PNG 图片">存图</button>
+  <button class="ctl color-btn" id="btnColor" title="墨色" aria-label="墨色">
+    <span class="color-dot" id="colorDot"></span>
+  </button>
+  <span class="vrule" aria-hidden="true"></span>
+  <span class="pick-slot">
+    <label class="font-pick" title="写完后的字帖字体；逐笔动画使用楷书笔顺数据">
+      <span>字帖</span>
+      <select id="fontSelect" aria-label="字帖字体"></select>
+    </label>
+    <label class="scene-pick" title="水墨背景：竹 / 梅 / 荷 / 山">
+      <span>景</span>
+      <select id="sceneSelect" aria-label="水墨背景"></select>
+    </label>
+  </span>
+  <span class="vrule" aria-hidden="true"></span>
+  <label class="poem-pick">
+    <select id="poemSelect" aria-label="选择篇目"></select>
+    <span class="caret" aria-hidden="true"></span>
+  </label>
+  </div>
+</div>
+
+<div class="sheet" id="sheet" hidden>
+  <div class="sheet-backdrop" id="sheetBackdrop"></div>
+  <div class="sheet-panel" role="dialog" aria-modal="true" aria-label="更多控制">
+    <div class="sheet-grab" aria-hidden="true"></div>
+    <div class="sheet-head"><span>更多</span><button type="button" id="sheetClose">收起</button></div>
+    <div class="sheet-body" id="sheetBody"></div>
+  </div>
+</div>
+
+<div class="loading" id="loading" hidden>正在取字…</div>
+
+<dialog class="compose" id="compose">
+  <form id="composeForm" method="dialog">
+    <h2>写一句</h2>
+    <p class="hint">名字、句子、整首词都行。一行一句，空一行分阕；标题留空就不排标题栏，字会居中成一列。第一次写新字需要联网取笔顺，取过的会缓存。</p>
+    <label>正文 <span class="hint-inline hint-desktop">⌘ / Ctrl + Enter 开始</span>
+      <textarea id="cText" maxlength="400" placeholder="马羽萱&#10;生日快乐，天天开心。&#10;箫声咽，秦娥梦断秦楼月。"></textarea>
+    </label>
+    <label>标题 <span class="hint-inline">可留空</span>
+      <input id="cTitle" type="text" maxlength="12" placeholder="例如：忆秦娥、水调歌头" autocomplete="off" />
+    </label>
+    <label>作者 <span class="hint-inline">可留空</span>
+      <input id="cAuthor" type="text" maxlength="8" placeholder="例如：李白" autocomplete="off" />
+    </label>
+    <p class="status" id="cStatus"></p>
+    <div class="actions">
+      <button type="button" id="cCancel">取消</button>
+      <button type="button" class="primary" id="cGo">开始书写</button>
+    </div>
+  </form>
+</dialog>
+
+<div class="toast" id="toast" hidden></div>
+
+<div class="speech-menu seal-menu" id="speechMenu" hidden role="dialog" aria-label="朗读">
+  <div class="seal-menu-head">朗读 <span>系统语音 · 无音频文件</span></div>
+  <button type="button" class="speech-toggle" id="speechToggle">开启朗读</button>
+  <label class="speech-field">声音
+    <select id="voiceSelect"></select>
+  </label>
+  <label class="speech-field">语速
+    <select id="speechRate">
+      <option value="0.9">慢</option>
+      <option value="1" selected>标准</option>
+      <option value="1.05">稍快</option>
+    </select>
+  </label>
+  <button type="button" class="speech-test" id="speechTest">试听一句</button>
+  <p class="speech-note" id="speechNote">落笔时逐句朗读；用系统中文语音，不加载音频文件。</p>
+</div>
+
+<div class="color-menu seal-menu" id="colorMenu" hidden role="dialog" aria-label="墨色">
+  <div class="seal-menu-head">换一种墨色 <span>落款 / 标点一起变</span></div>
+  <div class="color-grid" id="colorGrid"></div>
+  <label class="color-custom">
+    <span>自定义</span>
+    <input id="colorInput" type="color" value="#a83a2b" aria-label="自定义墨色" />
+  </label>
+  <p class="color-note">印章仍是朱红；存图会带上所选颜色。</p>
+</div>
+
+<div class="seal-menu" id="sealMenu" hidden role="dialog" aria-label="更换印章">
+  <div class="seal-menu-head">换一枚闲章 <span>不是姓名章</span></div>
+  <div class="seal-grid" id="sealGrid"></div>
+  <form class="seal-custom" id="sealForm" autocomplete="off">
+    <input id="sealInput" type="text" maxlength="2" placeholder="自定义两个字" aria-label="自定义印章文字" />
+    <button type="submit">用</button>
+  </form>
+  <div class="seal-foot">
+    <button type="button" id="sealOff">不盖</button>
+    <span>墨戏＝以墨为戏，文人闲章</span>
+  </div>
+</div>
+
+<svg class="filter-defs" width="0" height="0" aria-hidden="true" focusable="false">
+  <defs>
+    <filter id="brushInk" x="-30%" y="-30%" width="160%" height="160%" color-interpolation-filters="sRGB">
+      <feTurbulence type="fractalNoise" baseFrequency="0.02 0.04" numOctaves="3" seed="11" result="noise" />
+      <feDisplacementMap in="SourceGraphic" in2="noise" scale="7" xChannelSelector="R" yChannelSelector="G" result="rough" />
+      <feGaussianBlur in="rough" stdDeviation="2.4" result="bleed" />
+      <feComponentTransfer in="bleed" result="bleedSoft"><feFuncA type="linear" slope="0.3" /></feComponentTransfer>
+      <feGaussianBlur in="rough" stdDeviation="0.5" result="ink" />
+      <feDropShadow in="ink" dx="0" dy="5" stdDeviation="2.2" flood-color="#2a1b10" flood-opacity="0.18" result="shadow" />
+      <feMerge><feMergeNode in="bleedSoft" /><feMergeNode in="shadow" /><feMergeNode in="ink" /></feMerge>
+    </filter>
+    <filter id="inkTexture" x="-30%" y="-30%" width="160%" height="160%" color-interpolation-filters="sRGB">
+      <feTurbulence type="fractalNoise" baseFrequency="0.035 0.06" numOctaves="2" seed="7" result="noise" />
+      <feDisplacementMap in="SourceGraphic" in2="noise" scale="3" xChannelSelector="R" yChannelSelector="G" result="rough" />
+      <feDropShadow in="rough" dx="0" dy="6" stdDeviation="2.6" flood-color="#3a2410" flood-opacity="0.16" />
+    </filter>
+    <filter id="wetInk" x="-25%" y="-25%" width="150%" height="150%" color-interpolation-filters="sRGB">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="2.4" result="blur" />
+      <feSpecularLighting in="blur" surfaceScale="3.2" specularConstant="0.9" specularExponent="24" lighting-color="#fff6df" result="spec">
+        <fePointLight x="260" y="140" z="220" />
+      </feSpecularLighting>
+      <feComposite in="spec" in2="SourceAlpha" operator="in" result="specIn" />
+      <feMerge><feMergeNode in="SourceGraphic" /><feMergeNode in="specIn" /></feMerge>
+    </filter>
+    <radialGradient id="beadGrad" cx="38%" cy="32%" r="65%">
+      <stop offset="0%" stop-color="#050403" />
+      <stop offset="55%" stop-color="#1a120b" />
+      <stop offset="100%" stop-color="#5a4430" stop-opacity="0.2" />
+    </radialGradient>
+    <radialGradient id="tipGrad" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#2a1c0e" stop-opacity="0.26" />
+      <stop offset="55%" stop-color="#2a1c0e" stop-opacity="0.1" />
+      <stop offset="100%" stop-color="#2a1c0e" stop-opacity="0" />
+    </radialGradient>
+  </defs>
+</svg>
+
+<script src="data/strokes.js"></script>
+<script src="poems.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
